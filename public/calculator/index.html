@@ -120,6 +120,15 @@
     .span-two {
       grid-column: span 2;
     }
+
+    .btn-memory {
+      background: #374151;
+      color: #9ca3af;
+    }
+
+    .btn-memory:hover {
+      background: #4b5563;
+    }
   </style>
 </head>
 <body>
@@ -128,6 +137,11 @@
   <div class="calculator">
     <div class="display" id="display">0</div>
     <div class="buttons">
+      <button class="btn-memory" onclick="calc.memoryClear()">MC</button>
+      <button class="btn-memory" onclick="calc.memoryRecall()">MR</button>
+      <button class="btn-memory" onclick="calc.memoryAdd()">M+</button>
+      <button class="btn-memory" style="visibility: hidden;"></button>
+
       <button class="btn-clear span-two" onclick="calc.clear()">C</button>
       <button class="btn-operator" onclick="calc.inputOperator('÷')">÷</button>
       <button class="btn-operator" onclick="calc.inputOperator('×')">×</button>
@@ -160,6 +174,7 @@
       previousInput: null,
       operator: null,
       waitingForOperand: false,
+      memoryValue: 0,
 
       updateDisplay() {
         display.textContent = this.currentInput;
@@ -240,6 +255,22 @@
         this.operator = null;
         this.waitingForOperand = false;
         this.updateDisplay();
+      },
+
+      memoryAdd() {
+        if (this.currentInput === 'Error') return;
+        this.memoryValue += parseFloat(this.currentInput);
+        this.waitingForOperand = true;
+      },
+
+      memoryRecall() {
+        this.currentInput = this.memoryValue.toString();
+        this.waitingForOperand = false;
+        this.updateDisplay();
+      },
+
+      memoryClear() {
+        this.memoryValue = 0;
       },
     };
   </script>

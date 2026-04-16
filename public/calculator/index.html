@@ -239,6 +239,23 @@
   <script>
     const display = document.getElementById('display');
 
+    function formatDisplay(value) {
+      if (value === 'Error' || value === '0') return value;
+      const n = parseFloat(value);
+      if (!isFinite(n) || isNaN(n)) return 'Error';
+      if (n === 0) return '0';
+      const abs = Math.abs(n);
+      if (abs >= 1e-6 && abs < 1e10) return value;
+      let s = n.toExponential(5);
+      // strip trailing zeros in significand
+      s = s.replace(/\.?0+(e)/, '$1');
+      // uppercase E
+      s = s.replace('e', 'E');
+      // ensure exponent has sign
+      s = s.replace(/E(\d)/, 'E+$1');
+      return s;
+    }
+
     const calc = {
       currentInput: '0',
       previousInput: null,
@@ -256,7 +273,7 @@
       },
 
       updateDisplay() {
-        display.textContent = this.currentInput;
+        display.textContent = formatDisplay(this.currentInput);
       },
 
       inputDigit(digit) {

@@ -240,6 +240,71 @@ test.describe('Scientific calculator', () => {
   });
 });
 
+// ── Scientific notation display ──────────────────────────────────────────────
+
+test.describe('Scientific notation display', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/calculator');
+  });
+
+  test('9999999999 + 1 = shows 1E+10', async ({ page }) => {
+    // Type 9999999999
+    for (const d of '9999999999') {
+      await page.getByRole('button', { name: d, exact: true }).click();
+    }
+    await page.getByRole('button', { name: '+', exact: true }).click();
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByRole('button', { name: '=', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('1E+10');
+  });
+
+  test('1 ÷ 10000000 = shows 1E-7', async ({ page }) => {
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByRole('button', { name: '÷', exact: true }).click();
+    for (const d of '10000000') {
+      await page.getByRole('button', { name: d, exact: true }).click();
+    }
+    await page.getByRole('button', { name: '=', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('1E-7');
+  });
+
+  test('12345 + 0 = shows 12345 (no scientific notation)', async ({ page }) => {
+    for (const d of '12345') {
+      await page.getByRole('button', { name: d, exact: true }).click();
+    }
+    await page.getByRole('button', { name: '+', exact: true }).click();
+    await page.getByRole('button', { name: '0', exact: true }).click();
+    await page.getByRole('button', { name: '=', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('12345');
+  });
+
+  test('1.5 × 10000000000 = shows 1.5E+10 (trailing zeros stripped)', async ({ page }) => {
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByRole('button', { name: '.', exact: true }).click();
+    await page.getByRole('button', { name: '5', exact: true }).click();
+    await page.getByRole('button', { name: '×', exact: true }).click();
+    for (const d of '10000000000') {
+      await page.getByRole('button', { name: d, exact: true }).click();
+    }
+    await page.getByRole('button', { name: '=', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('1.5E+10');
+  });
+
+  test('display never contains "..." for computed results', async ({ page }) => {
+    // Large result
+    for (const d of '9999999999') {
+      await page.getByRole('button', { name: d, exact: true }).click();
+    }
+    await page.getByRole('button', { name: '×', exact: true }).click();
+    for (const d of '9999999999') {
+      await page.getByRole('button', { name: d, exact: true }).click();
+    }
+    await page.getByRole('button', { name: '=', exact: true }).click();
+    const text = await page.locator('#display').textContent();
+    expect(text).not.toContain('...');
+  });
+});
+
 // ── Server routing ────────────────────────────────────────────────────────────
 
 test.describe('Server routing', () => {

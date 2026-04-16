@@ -45,7 +45,7 @@ test.describe('Calculator arithmetic', () => {
   });
 
   test('3 + 4 = 7', async ({ page }) => {
-    await page.getByRole('button', { name: '2', exact: true }).click();
+    await page.getByRole('button', { name: '3', exact: true }).click();
     await page.getByRole('button', { name: '+', exact: true }).click();
     await page.getByRole('button', { name: '4', exact: true }).click();
     await page.getByRole('button', { name: '=', exact: true }).click();

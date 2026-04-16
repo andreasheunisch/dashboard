@@ -1,0 +1,14 @@
+{
+  "name": "nodejs-dashboard",
+  "version": "0.1.0",
+  "description": "A simple Node.js web app — hello page today, multi-app dashboard tomorrow",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator — Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 1.5rem;
+    }
+
+    .back-link {
+      color: #6366f1;
+      text-decoration: none;
+      font-size: 0.875rem;
+      align-self: center;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .calculator {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 280px;
+    }
+
+    .display {
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      text-align: right;
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      color: #e2e8f0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-height: 3.5rem;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 0.875rem 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: filter 0.1s;
+    }
+
+    button:active {
+      filter: brightness(1.25);
+    }
+
+    .btn-digit {
+      background: #252836;
+      color: #e2e8f0;
+    }
+
+    .btn-digit:hover {
+      background: #2d3148;
+    }
+
+    .btn-operator {
+      background: #3730a3;
+      color: #c7d2fe;
+    }
+
+    .btn-operator:hover {
+      background: #4338ca;
+    }
+
+    .btn-equals {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .btn-equals:hover {
+      background: #4f46e5;
+    }
+
+    .btn-clear {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .btn-clear:hover {
+      background: #991b1b;
+    }
+
+    .span-two {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="/">← Back to Dashboard</a>
+
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="btn-clear span-two" onclick="calc.clear()">C</button>
+      <button class="btn-operator" onclick="calc.inputOperator('÷')">÷</button>
+      <button class="btn-operator" onclick="calc.inputOperator('×')">×</button>
+
+      <button class="btn-digit" onclick="calc.inputDigit('7')">7</button>
+      <button class="btn-digit" onclick="calc.inputDigit('8')">8</button>
+      <button class="btn-digit" onclick="calc.inputDigit('9')">9</button>
+      <button class="btn-operator" onclick="calc.inputOperator('−')">−</button>
+
+      <button class="btn-digit" onclick="calc.inputDigit('4')">4</button>
+      <button class="btn-digit" onclick="calc.inputDigit('5')">5</button>
+      <button class="btn-digit" onclick="calc.inputDigit('6')">6</button>
+      <button class="btn-operator" onclick="calc.inputOperator('+')">+</button>
+
+      <button class="btn-digit" onclick="calc.inputDigit('1')">1</button>
+      <button class="btn-digit" onclick="calc.inputDigit('2')">2</button>
+      <button class="btn-digit" onclick="calc.inputDigit('3')">3</button>
+      <button class="btn-equals" style="grid-row: span 2;" onclick="calc.evaluate()">=</button>
+
+      <button class="btn-digit span-two" onclick="calc.inputDigit('0')">0</button>
+      <button class="btn-digit" onclick="calc.inputDecimal()">.</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+
+    const calc = {
+      currentInput: '0',
+      previousInput: null,
+      operator: null,
+      waitingForOperand: false,
+
+      updateDisplay() {
+        display.textContent = this.currentInput;
+      },
+
+      inputDigit(digit) {
+        if (this.waitingForOperand) {
+          this.currentInput = digit;
+          this.waitingForOperand = false;
+        } else {
+          this.currentInput = this.currentInput === '0'
+            ? digit
+            : this.currentInput + digit;
+        }
+        this.updateDisplay();
+      },
+
+      inputDecimal() {
+        if (this.waitingForOperand) {
+          this.currentInput = '0.';
+          this.waitingForOperand = false;
+          this.updateDisplay();
+          return;
+        }
+        if (!this.currentInput.includes('.')) {
+          this.currentInput += '.';
+          this.updateDisplay();
+        }
+      },
+
+      inputOperator(op) {
+        // If there's a pending operation, evaluate it first
+        if (this.operator && !this.waitingForOperand) {
+          this.evaluate();
+          if (this.currentInput === 'Error') return;
+        }
+        this.previousInput = this.currentInput;
+        this.operator = op;
+        this.waitingForOperand = true;
+      },
+
+      evaluate() {
+        if (this.operator === null || this.previousInput === null) return;
+
+        const a = parseFloat(this.previousInput);
+        const b = parseFloat(this.currentInput);
+        let result;
+
+        switch (this.operator) {
+          case '+': result = a + b; break;
+          case '−': result = a - b; break;
+          case '×': result = a * b; break;
+          case '÷':
+            if (b === 0) {
+              this.currentInput = 'Error';
+              this.operator = null;
+              this.previousInput = null;
+              this.waitingForOperand = false;
+              this.updateDisplay();
+              return;
+            }
+            result = a / b;
+            break;
+          default: return;
+        }
+
+        // Avoid floating point noise for simple cases
+        this.currentInput = parseFloat(result.toPrecision(12)).toString();
+        this.operator = null;
+        this.previousInput = null;
+        this.waitingForOperand = true;
+        this.updateDisplay();
+      },
+
+      clear() {
+        this.currentInput = '0';
+        this.previousInput = null;
+        this.operator = null;
+        this.waitingForOperand = false;
+        this.updateDisplay();
+      },
+    };
+  </script>
+</body>
+</html>

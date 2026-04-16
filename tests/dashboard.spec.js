@@ -202,6 +202,42 @@ test.describe('Scientific calculator', () => {
     await page.getByRole('button', { name: 'sin', exact: true }).click();
     await expect(page.locator('#display')).toHaveText('0');
   });
+
+  test('tan(0) → 0', async ({ page }) => {
+    await page.getByRole('button', { name: '0', exact: true }).click();
+    await page.getByRole('button', { name: 'tan', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('0');
+  });
+
+  test('ln(1) → 0', async ({ page }) => {
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByRole('button', { name: 'ln', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('0');
+  });
+
+  test('ln(0) → Error', async ({ page }) => {
+    await page.getByRole('button', { name: '0', exact: true }).click();
+    await page.getByRole('button', { name: 'ln', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('Error');
+  });
+
+  test('ln(e) → 1', async ({ page }) => {
+    await page.getByRole('button', { name: 'e', exact: true }).click();
+    await page.getByRole('button', { name: 'ln', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('1');
+  });
+
+  test('5 + (3 + 4) → 12', async ({ page }) => {
+    await page.getByRole('button', { name: '5', exact: true }).click();
+    await page.getByRole('button', { name: '+', exact: true }).click();
+    await page.getByRole('button', { name: '(', exact: true }).click();
+    await page.getByRole('button', { name: '3', exact: true }).click();
+    await page.getByRole('button', { name: '+', exact: true }).click();
+    await page.getByRole('button', { name: '4', exact: true }).click();
+    await page.getByRole('button', { name: ')', exact: true }).click();
+    await page.getByRole('button', { name: '=', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('12');
+  });
 });
 
 // ── Server routing ────────────────────────────────────────────────────────────

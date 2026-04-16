@@ -245,8 +245,8 @@
       operator: null,
       waitingForOperand: false,
       memoryValue: 0,
-      expressionBuffer: '',
       parenDepth: 0,
+      contextStack: [],
 
       roundResult(n) {
         if (!isFinite(n)) return n;
@@ -334,6 +334,8 @@
         this.previousInput = null;
         this.operator = null;
         this.waitingForOperand = false;
+        this.parenDepth = 0;
+        this.contextStack = [];
         this.updateDisplay();
       },
 
@@ -357,11 +359,12 @@
         if (this.currentInput === 'Error') return;
         const x = parseFloat(this.currentInput);
         const result = fn(x);
-        if (isNaN(result)) {
+        if (isNaN(result) || !isFinite(result)) {
           this.currentInput = 'Error';
         } else {
           this.currentInput = this.roundResult(result).toString();
         }
+        this.waitingForOperand = true;
         this.updateDisplay();
       },
 
@@ -377,7 +380,7 @@
 
       insertConstant(val) {
         this.currentInput = val.toString();
-        this.waitingForOperand = false;
+        this.waitingForOperand = true;
         this.updateDisplay();
       },
 
@@ -392,7 +395,10 @@
       },
 
       openParen() {
-        this.expressionBuffer += '(';
+        this.contextStack.push({
+          previousInput: this.previousInput,
+          operator: this.operator,
+        });
         this.parenDepth++;
         this.currentInput = '0';
         this.waitingForOperand = false;
@@ -416,21 +422,44 @@
             case '+': result = a + b; break;
             case '−': result = a - b; break;
             case '×': result = a * b; break;
-            case '÷': result = b === 0 ? NaN : a / b; break;
+            case '÷':
+              if (b === 0) {
+                this.currentInput = 'Error';
+                this.operator = null;
+                this.previousInput = null;
+                this.waitingForOperand = false;
+                this.parenDepth--;
+                this.contextStack.pop();
+                this.updateDisplay();
+                return;
+              }
+              result = a / b;
+              break;
             case 'pow': result = Math.pow(a, b); break;
             default: result = b;
           }
-          if (isNaN(result)) {
+          if (isNaN(result) || !isFinite(result)) {
             this.currentInput = 'Error';
-          } else {
-            this.currentInput = this.roundResult(result).toString();
+            this.operator = null;
+            this.previousInput = null;
+            this.waitingForOperand = false;
+            this.parenDepth--;
+            this.contextStack.pop();
+            this.updateDisplay();
+            return;
           }
+          this.currentInput = this.roundResult(result).toString();
           this.operator = null;
           this.previousInput = null;
         }
-        this.expressionBuffer = '';
+        // Restore outer context so the paren result combines with the outer expression
+        const outer = this.contextStack.pop();
+        if (outer && outer.operator !== null) {
+          this.previousInput = outer.previousInput;
+          this.operator = outer.operator;
+        }
         this.parenDepth--;
-        this.waitingForOperand = true;
+        this.waitingForOperand = false;
         this.updateDisplay();
       },
 

@@ -129,13 +129,83 @@
     .btn-memory:hover {
       background: #4b5563;
     }
+
+    .calculator-header {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    #btn-sci {
+      background: #252836;
+      color: #9ca3af;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    #btn-sci:hover {
+      background: #2d3148;
+    }
+
+    .sci-panel {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.35rem;
+    }
+
+    .sci-panel.row-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .btn-sci-fn {
+      background: #1e3a4a;
+      color: #67c5d0;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: filter 0.1s;
+    }
+
+    .btn-sci-fn:hover {
+      background: #264d5e;
+    }
+
+    .btn-sci-fn:active {
+      filter: brightness(1.25);
+    }
   </style>
 </head>
 <body>
   <a class="back-link" href="/">← Back to Dashboard</a>
 
   <div class="calculator">
+    <div class="calculator-header">
+      <button id="btn-sci" onclick="calc.toggleSci()">[sci]</button>
+    </div>
     <div class="display" id="display">0</div>
+    <div class="sci-panel" id="sci-panel" hidden>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(Math.sin)">sin</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(Math.cos)">cos</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(Math.tan)">tan</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log10(x)})">log</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log(x)})">ln</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<0?NaN:Math.sqrt(x)})">√</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x*x})">x²</button>
+      <button class="btn-sci-fn" onclick="calc.powerOp()">xʸ</button>
+      <button class="btn-sci-fn" onclick="calc.insertConstant(Math.PI)">π</button>
+      <button class="btn-sci-fn" onclick="calc.insertConstant(Math.E)">e</button>
+    </div>
+    <div class="sci-panel row-4" id="sci-panel-2" hidden>
+      <button class="btn-sci-fn" onclick="calc.negate()">±</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x/100})">%</button>
+      <button class="btn-sci-fn" onclick="calc.openParen()">(</button>
+      <button class="btn-sci-fn" onclick="calc.closeParen()">)</button>
+    </div>
     <div class="buttons">
       <button class="btn-memory" onclick="calc.memoryClear()">MC</button>
       <button class="btn-memory" onclick="calc.memoryRecall()">MR</button>
@@ -175,6 +245,15 @@
       operator: null,
       waitingForOperand: false,
       memoryValue: 0,
+      expressionBuffer: '',
+      parenDepth: 0,
+
+      roundResult(n) {
+        if (!isFinite(n)) return n;
+        const rounded = parseFloat(n.toPrecision(10));
+        if (Math.abs(rounded) < 1e-10) return 0;
+        return rounded;
+      },
 
       updateDisplay() {
         display.textContent = this.currentInput;
@@ -238,6 +317,7 @@
             }
             result = a / b;
             break;
+          case 'pow': result = Math.pow(a, b); break;
           default: return;
         }
 
@@ -271,6 +351,97 @@
 
       memoryClear() {
         this.memoryValue = 0;
+      },
+
+      applyUnary(fn) {
+        if (this.currentInput === 'Error') return;
+        const x = parseFloat(this.currentInput);
+        const result = fn(x);
+        if (isNaN(result)) {
+          this.currentInput = 'Error';
+        } else {
+          this.currentInput = this.roundResult(result).toString();
+        }
+        this.updateDisplay();
+      },
+
+      negate() {
+        if (this.currentInput === 'Error' || this.currentInput === '0') return;
+        if (this.currentInput.startsWith('-')) {
+          this.currentInput = this.currentInput.slice(1);
+        } else {
+          this.currentInput = '-' + this.currentInput;
+        }
+        this.updateDisplay();
+      },
+
+      insertConstant(val) {
+        this.currentInput = val.toString();
+        this.waitingForOperand = false;
+        this.updateDisplay();
+      },
+
+      powerOp() {
+        if (this.operator && !this.waitingForOperand) {
+          this.evaluate();
+          if (this.currentInput === 'Error') return;
+        }
+        this.previousInput = this.currentInput;
+        this.operator = 'pow';
+        this.waitingForOperand = true;
+      },
+
+      openParen() {
+        this.expressionBuffer += '(';
+        this.parenDepth++;
+        this.currentInput = '0';
+        this.waitingForOperand = false;
+        this.previousInput = null;
+        this.operator = null;
+        this.updateDisplay();
+      },
+
+      closeParen() {
+        if (this.parenDepth === 0) {
+          this.currentInput = 'Error';
+          this.updateDisplay();
+          return;
+        }
+        // If there's a pending operation inside the parens, resolve it
+        if (this.operator && this.previousInput !== null) {
+          const a = parseFloat(this.previousInput);
+          const b = parseFloat(this.currentInput);
+          let result;
+          switch (this.operator) {
+            case '+': result = a + b; break;
+            case '−': result = a - b; break;
+            case '×': result = a * b; break;
+            case '÷': result = b === 0 ? NaN : a / b; break;
+            case 'pow': result = Math.pow(a, b); break;
+            default: result = b;
+          }
+          if (isNaN(result)) {
+            this.currentInput = 'Error';
+          } else {
+            this.currentInput = this.roundResult(result).toString();
+          }
+          this.operator = null;
+          this.previousInput = null;
+        }
+        this.expressionBuffer = '';
+        this.parenDepth--;
+        this.waitingForOperand = true;
+        this.updateDisplay();
+      },
+
+      toggleSci() {
+        const panel = document.getElementById('sci-panel');
+        const panel2 = document.getElementById('sci-panel-2');
+        const btn = document.getElementById('btn-sci');
+        const isHidden = panel.hidden;
+        panel.hidden = !isHidden;
+        panel2.hidden = !isHidden;
+        btn.textContent = isHidden ? '[basic]' : '[sci]';
       },
     };
   </script>

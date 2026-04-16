@@ -69,6 +69,40 @@ test.describe('Calculator arithmetic', () => {
   });
 });
 
+// ── Calculator memory ────────────────────────────────────────────────────────
+
+test.describe('Calculator memory', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/calculator');
+  });
+
+  test('M+ stores value and MR recalls it', async ({ page }) => {
+    await page.getByRole('button', { name: '5', exact: true }).click();
+    await page.getByRole('button', { name: 'M+', exact: true }).click();
+    await page.getByRole('button', { name: 'C', exact: true }).click();
+    await page.getByRole('button', { name: 'MR', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('5');
+  });
+
+  test('MC clears memory', async ({ page }) => {
+    await page.getByRole('button', { name: '5', exact: true }).click();
+    await page.getByRole('button', { name: 'M+', exact: true }).click();
+    await page.getByRole('button', { name: 'MC', exact: true }).click();
+    await page.getByRole('button', { name: 'MR', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('0');
+  });
+
+  test('M+ accumulates', async ({ page }) => {
+    await page.getByRole('button', { name: '3', exact: true }).click();
+    await page.getByRole('button', { name: 'M+', exact: true }).click();
+    await page.getByRole('button', { name: '4', exact: true }).click();
+    await page.getByRole('button', { name: 'M+', exact: true }).click();
+    await page.getByRole('button', { name: 'C', exact: true }).click();
+    await page.getByRole('button', { name: 'MR', exact: true }).click();
+    await expect(page.locator('#display')).toHaveText('7');
+  });
+});
+
 // ── Server routing ────────────────────────────────────────────────────────────
 
 test.describe('Server routing', () => {

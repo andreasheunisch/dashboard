@@ -56,7 +56,6 @@
       letter-spacing: -0.02em;
       color: #e2e8f0;
       overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
       min-height: 3.5rem;
     }
@@ -155,6 +154,10 @@
       gap: 0.35rem;
     }
 
+    .sci-panel[hidden] {
+      display: none;
+    }
+
     .sci-panel.row-4 {
       grid-template-columns: repeat(4, 1fr);
     }
@@ -245,13 +248,20 @@
       if (!isFinite(n) || isNaN(n)) return 'Error';
       if (n === 0) return '0';
       const abs = Math.abs(n);
-      if (abs >= 1e-6 && abs < 1e10) return value;
-      let s = n.toExponential(5);
-      // strip trailing zeros in significand
-      s = s.replace(/\.?0+(e)/, '$1');
-      // uppercase E
+      if (value.length <= 12 && abs >= 1e-6 && abs < 1e12) return value;
+      for (let p = 10; p >= 0; p--) {
+        let s = n.toExponential(p);
+        s = s.replace(/\.?0+(e)/, '$1');
+        s = s.replace('e', 'E');
+        s = s.replace(/E(\d)/, 'E+$1');
+        if (s.endsWith('E+0')) {
+          const decimals = 12 - 2 - (n < 0 ? 1 : 0);
+          return n.toFixed(decimals).replace(/\.?0+$/, '');
+        }
+        if (s.length <= 12) return s;
+      }
+      let s = n.toExponential(0);
       s = s.replace('e', 'E');
-      // ensure exponent has sign
       s = s.replace(/E(\d)/, 'E+$1');
       return s;
     }
@@ -281,6 +291,7 @@
           this.currentInput = digit;
           this.waitingForOperand = false;
         } else {
+          if (this.currentInput.length >= 12) return;
           this.currentInput = this.currentInput === '0'
             ? digit
             : this.currentInput + digit;
@@ -296,6 +307,7 @@
           return;
         }
         if (!this.currentInput.includes('.')) {
+          if (this.currentInput.length >= 12) return;
           this.currentInput += '.';
           this.updateDisplay();
         }

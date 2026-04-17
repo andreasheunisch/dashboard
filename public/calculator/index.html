@@ -150,7 +150,7 @@
 
     .sci-panel {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(7, 1fr);
       gap: 0.35rem;
     }
 
@@ -204,6 +204,10 @@
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.sin(calc.toRadians(x))})">sin</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.cos(calc.toRadians(x))})">cos</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.tan(calc.toRadians(x))})">tan</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.asin(x))})">arcsin</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.acos(x))})">arccos</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.atan(x))})">arctan</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x===0?NaN:1/x})">1/x</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log10(x)})">log</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log(x)})">ln</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<0?NaN:Math.sqrt(x)})">√</button>
@@ -290,6 +294,14 @@
         switch (this.angleUnit) {
           case 'DEG': return x * Math.PI / 180;
           case 'GON': return x * Math.PI / 200;
+          default: return x;
+        }
+      },
+
+      fromRadians(x) {
+        switch (this.angleUnit) {
+          case 'DEG': return x * 180 / Math.PI;
+          case 'GON': return x * 200 / Math.PI;
           default: return x;
         }
       },

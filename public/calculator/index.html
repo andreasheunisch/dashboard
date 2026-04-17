@@ -159,7 +159,15 @@
     }
 
     .sci-panel.row-4 {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    #angle-unit-label {
+      display: none;
+      text-align: right;
+      font-size: 0.7rem;
+      color: #6b7280;
+      padding: 0 0.25rem;
     }
 
     .btn-sci-fn {
@@ -191,10 +199,11 @@
       <button id="btn-sci" onclick="calc.toggleSci()">[sci]</button>
     </div>
     <div class="display" id="display">0</div>
+    <span id="angle-unit-label">RAD</span>
     <div class="sci-panel" id="sci-panel" hidden>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(Math.sin)">sin</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(Math.cos)">cos</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(Math.tan)">tan</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.sin(calc.toRadians(x))})">sin</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.cos(calc.toRadians(x))})">cos</button>
+      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.tan(calc.toRadians(x))})">tan</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log10(x)})">log</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log(x)})">ln</button>
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<0?NaN:Math.sqrt(x)})">√</button>
@@ -208,6 +217,7 @@
       <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x/100})">%</button>
       <button class="btn-sci-fn" onclick="calc.openParen()">(</button>
       <button class="btn-sci-fn" onclick="calc.closeParen()">)</button>
+      <button class="btn-sci-fn" onclick="calc.toggleAngleUnit()">RAD</button>
     </div>
     <div class="buttons">
       <button class="btn-memory" onclick="calc.memoryClear()">MC</button>
@@ -274,6 +284,22 @@
       memoryValue: 0,
       parenDepth: 0,
       contextStack: [],
+      angleUnit: 'RAD',
+
+      toRadians(x) {
+        switch (this.angleUnit) {
+          case 'DEG': return x * Math.PI / 180;
+          case 'GON': return x * Math.PI / 200;
+          default: return x;
+        }
+      },
+
+      toggleAngleUnit() {
+        const cycle = { RAD: 'GON', GON: 'DEG', DEG: 'RAD' };
+        this.angleUnit = cycle[this.angleUnit];
+        document.getElementById('angle-unit-label').textContent = this.angleUnit;
+        document.querySelector('#sci-panel-2 button:last-child').textContent = this.angleUnit;
+      },
 
       roundResult(n) {
         if (!isFinite(n)) return n;
@@ -496,9 +522,12 @@
         const panel = document.getElementById('sci-panel');
         const panel2 = document.getElementById('sci-panel-2');
         const btn = document.getElementById('btn-sci');
+        const label = document.getElementById('angle-unit-label');
         const isHidden = panel.hidden;
         panel.hidden = !isHidden;
         panel2.hidden = !isHidden;
+        label.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) label.textContent = this.angleUnit;
         btn.textContent = isHidden ? '[basic]' : '[sci]';
       },
     };

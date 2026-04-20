@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: Keyboard input is suppressed when a form element is focused
 The calculator SHALL ignore keyboard shortcuts only when a non-button form element (`INPUT` other than the display, `TEXTAREA`, or `SELECT`) is the active element. When a calculator **button** is focused, the global handler SHALL NOT be suppressed — instead, each key type is routed appropriately: digit and decimal keys refocus the display (handled by keyboard-navigation), operator keys trigger their operation, and `=`/`Enter` defers to the button's own click handler.
 

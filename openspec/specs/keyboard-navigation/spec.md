@@ -58,7 +58,7 @@ When a calculator button has focus, pressing an arrow key SHALL move focus to th
 - **THEN** the display input receives focus
 
 #### Scenario: ArrowUp from top sci-panel row focuses the display
-- **WHEN** any button in the first row of the scientific panel (sin, cos, tan, arcsin, arccos, arctan, 1/x) is focused and the user presses ArrowUp
+- **WHEN** any button in the first row of the scientific panel (RAD/GON/DEG toggle, x², xʸ, sin, cos, tan) is focused and the user presses ArrowUp
 - **THEN** the display input receives focus
 
 ### Requirement: Pressing Enter on a focused button triggers it

@@ -81,16 +81,20 @@ The calculator SHALL provide an angle-unit toggle button, visible only when the 
 - **WHEN** the active unit is GON and the user presses the toggle button
 - **THEN** the active unit becomes DEG and the indicator updates to `DEG`
 
-### Requirement: Active angle unit is shown as a label on the display
-The calculator SHALL display a small label indicating the current angular unit (e.g. `DEG`, `RAD`, `GON`) when the scientific panel is visible. The label SHALL be hidden when the scientific panel is hidden.
+### Requirement: Active angle unit is shown on the toggle button
+The calculator SHALL display the active angular unit (RAD, GON, or DEG) as the text label of the angle-unit toggle button itself. A separate angle-unit indicator element is not required. The label SHALL update immediately when the unit changes.
 
-#### Scenario: Label visible in scientific mode
-- **WHEN** the user opens the scientific panel
-- **THEN** the angle-unit label is visible and shows the current unit
+#### Scenario: Default unit label on toggle button
+- **WHEN** the page loads and the scientific panel is opened
+- **THEN** the angle-unit toggle button shows `RAD`
+
+#### Scenario: Label updates after cycling
+- **WHEN** the active unit is DEG and the user presses the toggle button
+- **THEN** the toggle button text becomes `RAD`
 
 #### Scenario: Label hidden in basic mode
 - **WHEN** the user closes the scientific panel
-- **THEN** the angle-unit label is not visible
+- **THEN** the angle-unit toggle button is not visible (it is inside the panel)
 
 ### Requirement: log computes the base-10 logarithm
 The calculator SHALL provide a `log` button that replaces the current display value with its base-10 logarithm. If the value is ≤ 0, the display SHALL show `Error`.

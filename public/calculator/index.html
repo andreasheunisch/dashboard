@@ -155,26 +155,26 @@
       background: #2d3148;
     }
 
-    .sci-panel {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
+    #sci-panel {
+      display: flex;
+      flex-direction: column;
       gap: 0.35rem;
     }
 
-    .sci-panel[hidden] {
+    #sci-panel[hidden] {
       display: none;
     }
 
-    .sci-panel.row-4 {
-      grid-template-columns: repeat(5, 1fr);
+    .sci-row-ab {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.35rem;
     }
 
-    #angle-unit-label {
-      display: none;
-      text-align: right;
-      font-size: 0.7rem;
-      color: #6b7280;
-      padding: 0 0.25rem;
+    .sci-row-c {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.35rem;
     }
 
     .btn-sci-fn {
@@ -207,29 +207,30 @@
     </div>
     <!-- Task 1.1: replaced <div> with <input> for native cursor positioning -->
     <input type="text" class="display" id="display" value="0" spellcheck="false" autocomplete="off">
-    <span id="angle-unit-label">RAD</span>
-    <div class="sci-panel" id="sci-panel" hidden>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.sin(calc.toRadians(x))})">sin</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.cos(calc.toRadians(x))})">cos</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.tan(calc.toRadians(x))})">tan</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.asin(x))})">arcsin</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.acos(x))})">arccos</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.atan(x))})">arctan</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x===0?NaN:1/x})">1/x</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log10(x)})">log</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log(x)})">ln</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<0?NaN:Math.sqrt(x)})">√</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x*x})">x²</button>
-      <button class="btn-sci-fn" onclick="calc.powerOp()">xʸ</button>
-      <button class="btn-sci-fn" onclick="calc.insertConstant(Math.PI)">π</button>
-      <button class="btn-sci-fn" onclick="calc.insertConstant(Math.E)">e</button>
-    </div>
-    <div class="sci-panel row-4" id="sci-panel-2" hidden>
-      <button class="btn-sci-fn" onclick="calc.negate()">±</button>
-      <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x/100})">%</button>
-      <button class="btn-sci-fn" onclick="calc.openParen()">(</button>
-      <button class="btn-sci-fn" onclick="calc.closeParen()">)</button>
-      <button class="btn-sci-fn" onclick="calc.toggleAngleUnit()">RAD</button>
+    <div id="sci-panel" hidden>
+      <div class="sci-row-ab">
+        <button id="btn-angle-unit" class="btn-sci-fn" onclick="calc.toggleAngleUnit()">RAD</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x*x})">x²</button>
+        <button class="btn-sci-fn" onclick="calc.powerOp()">xʸ</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.sin(calc.toRadians(x))})">sin</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.cos(calc.toRadians(x))})">cos</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return Math.tan(calc.toRadians(x))})">tan</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log(x)})">ln</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<0?NaN:Math.sqrt(x)})">√</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x===0?NaN:1/x})">1/x</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.asin(x))})">arcsin</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.acos(x))})">arccos</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return calc.fromRadians(Math.atan(x))})">arctan</button>
+      </div>
+      <div class="sci-row-c">
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x<=0?NaN:Math.log10(x)})">log</button>
+        <button class="btn-sci-fn" onclick="calc.applyUnary(function(x){return x/100})">%</button>
+        <button class="btn-sci-fn" onclick="calc.openParen()">(</button>
+        <button class="btn-sci-fn" onclick="calc.closeParen()">)</button>
+        <button class="btn-sci-fn" onclick="calc.insertConstant(Math.PI)">π</button>
+        <button class="btn-sci-fn" onclick="calc.insertConstant(Math.E)">e</button>
+        <button class="btn-sci-fn" onclick="calc.negate()">±</button>
+      </div>
     </div>
     <div class="buttons">
       <button class="btn-memory" onclick="calc.memoryClear()">MC</button>
@@ -370,8 +371,7 @@
       toggleAngleUnit() {
         const cycle = { RAD: 'GON', GON: 'DEG', DEG: 'RAD' };
         this.angleUnit = cycle[this.angleUnit];
-        document.getElementById('angle-unit-label').textContent = this.angleUnit;
-        document.querySelector('#sci-panel-2 button:last-child').textContent = this.angleUnit;
+        document.getElementById('btn-angle-unit').textContent = this.angleUnit;
       },
 
       roundResult(n) {
@@ -628,15 +628,9 @@
 
       toggleSci() {
         const panel = document.getElementById('sci-panel');
-        const panel2 = document.getElementById('sci-panel-2');
         const btn = document.getElementById('btn-sci');
-        const label = document.getElementById('angle-unit-label');
-        const isHidden = panel.hidden;
-        panel.hidden = !isHidden;
-        panel2.hidden = !isHidden;
-        label.style.display = isHidden ? 'block' : 'none';
-        if (isHidden) label.textContent = this.angleUnit;
-        btn.textContent = isHidden ? '[basic]' : '[sci]';
+        panel.hidden = !panel.hidden;
+        btn.textContent = panel.hidden ? '[sci]' : '[basic]';
       },
 
       // Task 2.1: start a new number entry from a button-focus state

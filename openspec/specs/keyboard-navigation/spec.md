@@ -35,7 +35,7 @@ When the display input is focused and has a cursor positioned mid-value, pressin
 - **THEN** the display shows `123` and the cursor advances one position
 
 ### Requirement: Arrow keys navigate between buttons spatially
-When a calculator button has focus, pressing an arrow key SHALL move focus to the nearest button in the pressed direction, based on each button's rendered screen position.
+When a calculator button has focus, pressing an arrow key SHALL move focus to the nearest focusable element — button or display input — in the pressed direction, based on each element's rendered screen position. The display input SHALL be included as a candidate target alongside buttons.
 
 #### Scenario: Navigate right from a button
 - **WHEN** the `7` button is focused and the user presses ArrowRight
@@ -52,6 +52,14 @@ When a calculator button has focus, pressing an arrow key SHALL move focus to th
 #### Scenario: Arrow key does not scroll the page
 - **WHEN** any button is focused and the user presses an arrow key
 - **THEN** the page does not scroll
+
+#### Scenario: ArrowDown from sci toggle focuses the display
+- **WHEN** the `[sci]`/`[basic]` toggle button is focused and the user presses ArrowDown
+- **THEN** the display input receives focus
+
+#### Scenario: ArrowUp from top sci-panel row focuses the display
+- **WHEN** any button in the first row of the scientific panel (sin, cos, tan, arcsin, arccos, arctan, 1/x) is focused and the user presses ArrowUp
+- **THEN** the display input receives focus
 
 ### Requirement: Pressing Enter on a focused button triggers it
 When a calculator button has focus, pressing Enter SHALL activate that button's action, identical to clicking it.

@@ -309,29 +309,47 @@
       const cx = (activeRect.left + activeRect.right) / 2;
       const cy = (activeRect.top + activeRect.bottom) / 2;
 
-      // Build { el, rect } candidates from all focusable buttons plus the display input
+      // Build { el, deltaX, deltaY } for all focusable elements except the current one
       const focusableEls = getFocusableButtons().concat([display]);
-      const candidates = focusableEls
+      const all = focusableEls
         .filter(function(el) { return el !== active; })
-        .map(function(el) { return { el: el, rect: el.getBoundingClientRect() }; })
-        .filter(function(c) {
-          const bx = (c.rect.left + c.rect.right) / 2;
-          const by = (c.rect.top + c.rect.bottom) / 2;
-          if (direction === 'ArrowRight') return bx > cx;
-          if (direction === 'ArrowLeft')  return bx < cx;
-          if (direction === 'ArrowDown')  return by > cy;
-          if (direction === 'ArrowUp')    return by < cy;
+        .map(function(el) {
+          const rect = el.getBoundingClientRect();
+          const bx = (rect.left + rect.right) / 2;
+          const by = (rect.top + rect.bottom) / 2;
+          return { el: el, deltaX: bx - cx, deltaY: by - cy };
+        });
+
+      // Stage 1 (cone filter): pressed-axis displacement must exceed the perpendicular axis.
+      // This ensures ArrowRight prefers a button directly to the right over a diagonal one below.
+      let candidates = all.filter(function(c) {
+        const dx = c.deltaX, dy = c.deltaY;
+        if (direction === 'ArrowRight') return dx > 0 && dx > Math.abs(dy);
+        if (direction === 'ArrowLeft')  return dx < 0 && Math.abs(dx) > Math.abs(dy);
+        if (direction === 'ArrowDown')  return dy > 0 && dy > Math.abs(dx);
+        if (direction === 'ArrowUp')    return dy < 0 && Math.abs(dy) > Math.abs(dx);
+        return false;
+      });
+
+      // Stage 2 (fallback): if no candidates are within the 45° cone (e.g. at a panel edge),
+      // fall back to the original directional filter so navigation never dead-ends.
+      if (candidates.length === 0) {
+        candidates = all.filter(function(c) {
+          if (direction === 'ArrowRight') return c.deltaX > 0;
+          if (direction === 'ArrowLeft')  return c.deltaX < 0;
+          if (direction === 'ArrowDown')  return c.deltaY > 0;
+          if (direction === 'ArrowUp')    return c.deltaY < 0;
           return false;
         });
+      }
 
       if (candidates.length === 0) return;
 
+      // Among surviving candidates, pick the one with minimum Euclidean distance
       let best = null;
       let bestDist = Infinity;
       candidates.forEach(function(c) {
-        const bx = (c.rect.left + c.rect.right) / 2;
-        const by = (c.rect.top + c.rect.bottom) / 2;
-        const dist = Math.sqrt((bx - cx) * (bx - cx) + (by - cy) * (by - cy));
+        const dist = Math.sqrt(c.deltaX * c.deltaX + c.deltaY * c.deltaY);
         if (dist < bestDist) {
           bestDist = dist;
           best = c;

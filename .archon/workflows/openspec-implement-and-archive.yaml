@@ -24,6 +24,8 @@ nodes:
       git add "openspec/changes/$CHANGE"
       git commit -m "chore: add openspec change '$CHANGE'"
       echo "Committed openspec change files for '$CHANGE'"
+      rm -rf "$MAIN/openspec/changes/$CHANGE"
+      echo "Removed '$CHANGE' from main worktree"
 
   - id: apply
     prompt: |

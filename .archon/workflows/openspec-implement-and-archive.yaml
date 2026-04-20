@@ -1,0 +1,76 @@
+name: openspec-implement-and-archive
+description: |
+  Implement and archive an OpenSpec proposed change on an isolated feature branch.
+  Copies the openspec change files from the main worktree, commits them, runs
+  implementation via openspec-apply, commits the result, archives the change,
+  and commits the archive — all on the feature branch worktree.
+  Assumes openspec propose has already been run in the main worktree.
+  Usage: archon workflow run openspec-implement-and-archive --branch feat/<name> "<change-name>"
+
+provider: claude
+
+nodes:
+  - id: commit-openspec
+    bash: |
+      MAIN=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
+      CHANGE="$ARGUMENTS"
+      SRC="$MAIN/openspec/changes/$CHANGE"
+      if [ ! -d "$SRC" ]; then
+        echo "ERROR: openspec change '$CHANGE' not found at $SRC"
+        exit 1
+      fi
+      mkdir -p openspec/changes
+      cp -r "$SRC" "openspec/changes/$CHANGE"
+      git add "openspec/changes/$CHANGE"
+      git commit -m "chore: add openspec change '$CHANGE'"
+      echo "Committed openspec change files for '$CHANGE'"
+
+  - id: apply
+    prompt: |
+      You have the openspec-apply-change skill loaded. Follow its instructions to implement
+      the OpenSpec change named "$ARGUMENTS".
+
+      - Change name: $ARGUMENTS
+      - Use this change name directly — do not prompt for selection
+      - Read context files and implement all pending tasks
+      - When all tasks are complete, stop
+    skills:
+      - openspec-apply-change
+    depends_on: [commit-openspec]
+    idle_timeout: 1800000
+
+  - id: commit-implementation
+    bash: |
+      git add -A
+      if git diff --cached --quiet; then
+        echo "No implementation changes to commit"
+      else
+        git commit -m "feat: implement $ARGUMENTS"
+        echo "Committed implementation changes"
+      fi
+    depends_on: [apply]
+
+  - id: archive
+    prompt: |
+      You have the openspec-archive-change skill loaded. Follow its instructions to archive
+      the OpenSpec change named "$ARGUMENTS".
+
+      - Change name: $ARGUMENTS
+      - Use this change name directly — do not prompt for selection
+      - If delta specs exist, sync them automatically (the recommended option) without prompting
+      - Proceed with the archive
+    skills:
+      - openspec-archive-change
+    depends_on: [commit-implementation]
+    idle_timeout: 600000
+
+  - id: commit-archive
+    bash: |
+      git add openspec/
+      if git diff --cached --quiet; then
+        echo "No archive changes to commit"
+      else
+        git commit -m "chore: archive openspec change '$ARGUMENTS'"
+        echo "Committed archive"
+      fi
+    depends_on: [archive]

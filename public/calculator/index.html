@@ -642,6 +642,46 @@
         this.inputDigit(digit);
         display.focus();
       },
+
+      // Tasks 2.1–2.8: cursor-aware single-character deletion
+      deleteAt(direction) {
+        // 2.2: no-op on error state
+        if (this.currentInput === 'Error') return;
+        // 2.3: computed result shown — reset to '0' and start fresh
+        if (this.waitingForOperand) {
+          this.currentInput = '0';
+          this.waitingForOperand = false;
+          this.updateDisplay();
+          display.focus();
+          return;
+        }
+        // 2.4: read cursor position
+        const pos = display.selectionStart;
+        let newPos;
+        let spliced;
+        // 2.5: backward (Backspace)
+        if (direction === 'backward') {
+          if (pos === 0) return;
+          spliced = this.currentInput.slice(0, pos - 1) + this.currentInput.slice(pos);
+          newPos = pos - 1;
+        } else {
+          // 2.6: forward (Delete)
+          if (pos === this.currentInput.length) return;
+          spliced = this.currentInput.slice(0, pos) + this.currentInput.slice(pos + 1);
+          newPos = pos;
+        }
+        // 2.7: normalise degenerate results
+        if (spliced === '' || spliced === '-' || spliced === '-0') {
+          this.currentInput = '0';
+          newPos = 1;
+        } else {
+          this.currentInput = spliced;
+        }
+        // 2.8: update state, display, and restore cursor
+        this.waitingForOperand = false;
+        this.updateDisplay();
+        display.setSelectionRange(newPos, newPos);
+      },
     };
 
     // Task 1.5: prevent direct user edits to the display input;
@@ -716,6 +756,25 @@
         calc.inputOperator('\u00f7');
       } else if (e.key === '=' || e.key === 'Enter') {
         calc.evaluate();
+      // 1.1: Esc — global clear; preventDefault suppresses browser defaults (e.g. exit fullscreen)
+      } else if (e.key === 'Escape') {
+        calc.clear();
+        e.preventDefault();
+      // 1.2: C/c letter key — global clear; skip if any modifier held (preserves Ctrl+C copy)
+      } else if ((e.key === 'c' || e.key === 'C') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        calc.clear();
+      // 3.1: Backspace — cursor-aware delete backward, only when display is focused
+      } else if (e.key === 'Backspace') {
+        if (ae === display) {
+          calc.deleteAt('backward');
+          e.preventDefault();
+        }
+      // 3.2: Delete — cursor-aware delete forward, only when display is focused
+      } else if (e.key === 'Delete') {
+        if (ae === display) {
+          calc.deleteAt('forward');
+          e.preventDefault();
+        }
       }
     });
   </script>
